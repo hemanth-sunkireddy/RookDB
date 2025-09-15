@@ -4,7 +4,7 @@ use std::fs;
 pub mod page;
 use crate::page::Page;
 
-pub const MAX_PAGES: u64 = 1024;  // 1024 * 8 = 8,388,608 bytes ≈ 8 MB
+pub const MAX_PAGES: usize = 1024;  // 1024 * 8 = 8,388,608 bytes ≈ 8 MB
 pub const CATALOG_PATH: &str = "database/catalog.dat"; // Catalog file path
 
 fn main() {
@@ -33,4 +33,9 @@ fn main() {
     // Loading Catalog
     let catalog_bytes = fs::read(CATALOG_PATH).unwrap();
     println!("Data Inside Catalog: {:?}", catalog_bytes);
+
+    // Load Page from Disk
+    let page = Page::new(32);
+    println!("PAGE ID: {}", page.id);
+
 }
