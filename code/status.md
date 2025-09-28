@@ -1,8 +1,13 @@
-# Implementation Status
+# Implementation
 
-1. Created a page struct.
-2. Initliased n pages in memory.
-3. Read catalog file using OS file system.
+1. Created Page Data Structure similar to Postgres Page Layout.
+2. Page Header contains only lower and upper - for simple storage manager this is enough.
+3. ItemId contains only offset - this works for **Fixed size rows**.
+    - If length is not required in ItemId then no need of ItemId's also because we can directly calculate data offset.
+
+
+## On System Start
+* Load Catalog File - Now contains only Table Name and Table Location - stored in the form of pages.
 
 
 ## Questions.

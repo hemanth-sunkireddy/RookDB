@@ -1,51 +1,35 @@
-use std::io::{Seek, SeekFrom, Write};
 pub const PAGE_SIZE: usize = 8192;  // Page size
-pub const PAGE_HEADER_SIZE: usize = 400; // Page Header Size
+pub const PAGE_HEADER_SIZE: u16 = 4; // Page Header Size - 4 bytes
 
 pub struct PageHeader {
-    // pub page_no: usize,   // Page number or page id?
-    pub lower: usize,
-    pub upper: usize,
-    pub magic: usize
+    pub lower: u16,   // Offset to start of free space - 2 bytes
+    pub upper: u16,   // Offset to end of free space - 2 bytes
 }
+
+pub struct ItemId {
+    pub offset: u16, // Offset of the item
+}
+
 pub struct Page {
     pub header: PageHeader,
-    pub id: usize,                // 4 bytes integer - 4 billion page id's are possible.
-    pub data: [u8; PAGE_SIZE]   // Array of page size elements
+    pub item_id_data: ItemId,
+    pub data: Vec<u8>    // Actual Data
 }
 
 impl PageHeader {
-    pub fn new(id: usize, magic_no: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            // page_no: id,
             lower: 0,
             upper: PAGE_HEADER_SIZE,
-            magic: magic_no
         }
     }
 }
 
 impl Page {
-    pub fn new(id: usize) -> Self {
-        Self { header: PageHeader::new(1, 32 ), id, data: [0; PAGE_SIZE]
+    pub fn new() -> Self {
+        Self { header: PageHeader::new( ), 
+            item_id_data: ItemId { offset: 0 },
+            data: Vec::with_capacity(PAGE_SIZE)
         }
-    }
-
-    // Load from Disk Page to memory page - Page id's are not required?
-    pub fn load_from(&mut self, page_id_disk: usize, page_id_memory: usize, disk_page: Page) {
-        self.data = disk_page.data;
-        self.header = disk_page.header;
-    }
-
-    // From Memory Page to Disk Page: // store_to function should have write_to disk function: Inputs: File Name, page and Outputs: Result
-    pub fn store_to(&mut self, memory_page: Page) {
-        self.header = memory_page.header;
-        self.data = memory_page.data;   // Here persistence code should happen - Like get relation first, then update in that relation.
-    }
-
-    pub fn write_to_disk(&mut self, file: &mut std::fs::File) -> std::io::Result<()> {
-        file.seek(SeekFrom::Start((self.id as u64) * PAGE_SIZE as u64))?;
-        file.write_all(&self.data)?;
-        Ok(())
     }
 }
