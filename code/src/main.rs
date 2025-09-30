@@ -1,47 +1,71 @@
-// use std::io;
-use std::fs;
-use std::io::{ Write, Seek};
+use std::io;
+use std::fs::{OpenOptions};
 
-pub mod page;
-// use crate::page::Page;
-
-pub mod catalog;
-use crate::catalog::{Catalog};
+mod disk;
+mod raw_page;
+use crate::raw_page::{Page};
+use crate::disk::read_page;
 
 pub const CATALOG_PATH: &str = "database/global/catalog.dat"; // Catalog file path
 
-fn main() {
+fn main() -> io::Result<()> {
     println!("Welcome to Storage Manager");
 
-    // Serialize total_pages = 1 into 4 bytes (little endian)
-    let total_pages_bytes = 1u32.to_be_bytes();
+    /* 
+    Reading a Page from Disk file to Memory Page
+    File: Catalog
+    Page: page
+    PageNum: 0
+    */
 
-    // Overwrite first 4 bytes of catalog.dat
-    let mut catalog_file = fs::OpenOptions::new()
-        .write(true)
-        .open(CATALOG_PATH)
-        .expect("Failed to open catalog file");
+    // Create File Pointer
+    let mut file_pointer = OpenOptions::new()
+        .read(true)
+        .open(CATALOG_PATH)?;
 
-    // Write the 4 bytes at the beginning
-    catalog_file.seek(std::io::SeekFrom::Start(0)).unwrap();
-    catalog_file.write_all(&total_pages_bytes).unwrap();
+    // Create a Page in Memory
+    let mut page: Page = Page::new();
 
-    println!("Catalog header updated: total_pages = 1");
+    let page_num: u32 = 0;
 
-    // Create Page in Memory
-    // let page = Page::new();
-    // println!("Created 1 Page in Memory.");
+    read_page(&mut file_pointer,&mut page, page_num)?;
+    println!("Page Data: {:?}", page.data);
+
+    Ok(())
+}
+
+// fn main() {
+//     println!("Welcome to Storage Manager");
+
+//     // Serialize total_pages = 1 into 4 bytes (little endian)
+//     let total_pages_bytes = 1u32.to_be_bytes();
+
+//     // Overwrite first 4 bytes of catalog.dat
+//     let mut catalog_file = fs::OpenOptions::new()
+//         .write(true)
+//         .open(CATALOG_PATH)
+//         .expect("Failed to open catalog file");
+
+//     // Write the 4 bytes at the beginning
+//     catalog_file.seek(std::io::SeekFrom::Start(0)).unwrap();
+//     catalog_file.write_all(&total_pages_bytes).unwrap();
+
+//     println!("Catalog header updated: total_pages = 1");
+
+//     // Create Page in Memory
+//     // let page = Page::new();
+//     // println!("Created 1 Page in Memory.");
 
     
-    // Loading Catalog
-    let catalog_bytes = fs::read(CATALOG_PATH).unwrap();
-    println!("Raw Data Inside Catalog: {:?}", catalog_bytes);
+//     // Loading Catalog
+//     let catalog_bytes = fs::read(CATALOG_PATH).unwrap();
+//     println!("Raw Data Inside Catalog: {:?}", catalog_bytes);
 
-    // Loading Catalog
-    let catalog_bytes = fs::read(CATALOG_PATH).unwrap();
-    println!("Data Inside Catalog: {:?}", catalog_bytes);
+//     // Loading Catalog
+//     let catalog_bytes = fs::read(CATALOG_PATH).unwrap();
+//     println!("Data Inside Catalog: {:?}", catalog_bytes);
 
-    // Parse catalog from bytes
-    let catalog = Catalog::parse(&catalog_bytes);
-    println!("Catalog Header -> total_pages = {}", catalog.header.total_pages);
-}
+//     // Parse catalog from bytes
+//     let catalog = Catalog::read_catalog(&catalog_bytes);
+//     println!("Catalog Header -> total_pages = {}", catalog.header.total_pages);
+// }

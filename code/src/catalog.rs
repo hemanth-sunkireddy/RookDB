@@ -1,7 +1,7 @@
 use crate::page::{Page};
 
 pub const CATALOG_SIZE: usize = 8192; // Catalog size = 1 page
-pub const CATALOG_HEADER_SIZE: u16 = 2; // Catalog Header Size - 2 bytes
+pub const CATALOG_HEADER_SIZE: u32 = 4; // Catalog Header Size - 2 bytes
 
 pub struct CatalogHeader {
     pub total_pages: u32, // number of pages in catalog - 4 bytes to store this value
@@ -30,7 +30,7 @@ impl Catalog {
     }
 
     /// Parse a Catalog from raw bytes (deserialize header only for now)
-    pub fn parse(bytes: &[u8]) -> Self {
+    pub fn read_catalog(bytes: &[u8]) -> Self {
         if bytes.len() < 4 {
             panic!("Catalog file too small to contain header!");
         }
