@@ -1,35 +1,49 @@
+use std::fs::OpenOptions;
 use std::io;
-use std::fs::{OpenOptions};
 
 mod disk;
 mod raw_page;
-use crate::raw_page::{Page};
-use crate::disk::read_page;
+use crate::disk::{create_page, read_page, write_page};
+use crate::raw_page::Page;
 
 pub const CATALOG_PATH: &str = "database/global/catalog.dat"; // Catalog file path
 
 fn main() -> io::Result<()> {
     println!("Welcome to Storage Manager");
 
-    /* 
+    // Create File Pointer
+    let mut file_pointer = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(CATALOG_PATH)?;
+
+    /*
+    Create a Page
+    */
+    create_page(&mut file_pointer)?;
+    println!("Page created successfully.");
+
+    /*
     Reading a Page from Disk file to Memory Page
     File: Catalog
     Page: page
     PageNum: 0
     */
 
-    // Create File Pointer
-    let mut file_pointer = OpenOptions::new()
-        .read(true)
-        .open(CATALOG_PATH)?;
-
     // Create a Page in Memory
     let mut page: Page = Page::new();
 
+    let content = b"Hello, Storage Manager!";
+    page.data[..content.len()].copy_from_slice(content);
+
     let page_num: u32 = 0;
 
-    read_page(&mut file_pointer,&mut page, page_num)?;
-    println!("Page Data: {:?}", page.data);
+    write_page(&mut file_pointer, &mut page, page_num)?;
+    println!("Updated Page with content Successfully.");
+
+    read_page(&mut file_pointer, &mut page, page_num)?;
+    let page_text = String::from_utf8_lossy(&page.data);
+    println!("Page Data: {}", page_text);
 
     Ok(())
 }
@@ -56,7 +70,6 @@ fn main() -> io::Result<()> {
 //     // let page = Page::new();
 //     // println!("Created 1 Page in Memory.");
 
-    
 //     // Loading Catalog
 //     let catalog_bytes = fs::read(CATALOG_PATH).unwrap();
 //     println!("Raw Data Inside Catalog: {:?}", catalog_bytes);
