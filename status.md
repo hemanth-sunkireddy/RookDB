@@ -1,5 +1,15 @@
 # Implementation
 
+
+
+
+<!-- Few Design choices to consider:
+1. In Read and Write page should we pass file name or File pointer.
+2. Because in create page passing file name is better than passing file pointer. -->
+
+<!-- The above one's are Core Page Operations  -->
+<!-- file management operations (create_file, open_file, close_file) are next level for storage manager -->
+
 1. Created Page Data Structure similar to Postgres Page Layout.
 2. Page Header contains only lower and upper - for simple storage manager this is enough.
 3. ItemId contains only offset - this works for **Fixed size rows**.

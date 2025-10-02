@@ -1,6 +1,7 @@
 # Storage Manager
 
-### Code
+### Code and Design Doc
+- [Design Doc - v0](Design-Doc-v0.pdf)
 - [Code - click here](code/)
 - [Code Documentation](https://hemanth-sunkireddy.github.io/Storage-Manager/storage_manager/index.html)
 

@@ -4,7 +4,7 @@ use std::io;
 mod disk;
 mod raw_page;
 use crate::disk::{create_page, read_page, write_page};
-use crate::raw_page::Page;
+use crate::raw_page::{Page, page_add_data};
 
 pub const CATALOG_PATH: &str = "database/global/catalog.dat"; // Catalog file path
 
@@ -18,17 +18,10 @@ fn main() -> io::Result<()> {
         .open(CATALOG_PATH)?;
 
     /*
-    Create a Page
+    Create a Page in file
     */
     create_page(&mut file_pointer)?;
     println!("Page created successfully.");
-
-    /*
-    Reading a Page from Disk file to Memory Page
-    File: Catalog
-    Page: page
-    PageNum: 0
-    */
 
     // Create a Page in Memory
     let mut page: Page = Page::new();
@@ -38,12 +31,24 @@ fn main() -> io::Result<()> {
 
     let page_num: u32 = 0;
 
+    // Write page to file
     write_page(&mut file_pointer, &mut page, page_num)?;
     println!("Updated Page with content Successfully.");
 
+    /*
+    Reading a Page from Disk file to Memory Page
+    File: Catalog
+    Page: page
+    PageNum: 0
+    */
     read_page(&mut file_pointer, &mut page, page_num)?;
     let page_text = String::from_utf8_lossy(&page.data);
     println!("Page Data: {}", page_text);
+
+    // Adding Data to the File
+    let data_to_add = b"This is some raw data to add to the file.";
+    page_add_data(&mut file_pointer, data_to_add)?;
+    println!("Data added to file.");
 
     Ok(())
 }
