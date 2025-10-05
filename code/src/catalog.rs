@@ -35,7 +35,7 @@ impl Catalog {
             panic!("Catalog file too small to contain header!");
         }
 
-        let total_pages = u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+        let total_pages = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
 
         Self {
             header: CatalogHeader { total_pages },

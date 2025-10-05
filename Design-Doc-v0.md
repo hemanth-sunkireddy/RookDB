@@ -2,34 +2,57 @@
 
 ### Page - Physical Layout
 ```rust
+pub const PAGE_SIZE: usize = 8192;
+
 pub struct Page {
     pub data: Vec<u8>  // Fixed-size buffer holds the raw bytes of a page (PAGE_SIZE = 8KB)
 }
 ```
+
+![Initial Page Layout](/Storage_Manager/assets/Design-Doc/Initial-page-layout.jpeg)
+
+
 ### Page Header
-```
+```rust
 pub const PAGE_HEADER_SIZE: u32 = 8; // Page Header Size - 8 bytes (4 for lower, 4 for upper)
+
 pub struct PageHeader {
     pub lower: u32,   // Offset to start of free space - 4 bytes
     pub upper: u32,   // Offset to end of free space - 4 bytes
 }
 ```
-```
+
+### Item/Tuple Details
+```rust
+pub const ITEM_ID_SIZE: u32  = 8;
+
 pub struct ItemId {
     pub offset: u32, // Offset of the item/tuple
     pub length: u32, // Length of the item/tuple
 }
 ```
 ### **Logical Page Layout**
-```
+```rust
 pub struct Page {
     pub header: PageHeader,
     pub item_id_data: Vec<ItemId>,
 }
 ```
+
 ---
 
-### 0.`create_page` API
+## Currently Implemented API's
+0. Create Page
+1. Init Page
+2. Read Page
+3. Write Page
+4. Page Count
+5. Page Free Space
+6. Page Add Data
+
+---
+
+### 0. `create_page` API
 **Description:**  
 Create a page in disk for a file.
 
@@ -49,7 +72,29 @@ Create a page at the end of the file.
 3. Writes the entire zero-filled page to the file, effectively creating a new page on disk.
 ---
 
-### 1. `read_page` API
+### 1. `init_page` API
+**Description:**
+
+* Initializes the **Page Header** with two offset values:
+    - **Lower Offset** (`PAGE_HEADER_SIZE`) → bytes 0..4
+    - **Upper Offset** (`PAGE_SIZE`) → bytes 4..8
+
+**Function:**  
+```rust
+pub fn init_page(page:&mut Page)
+```
+**Input:** 
+`page:` Page to set Header - Lower and Upper Offsets.
+
+**Output:** 
+Page header updated with lower and upper offsets.
+
+**Implementation:**
+1. Write the lower offset (`PAGE_HEADER_SIZE`) into the first 4 bytes of the page header (0..4).
+2. Write the upper offset (`PAGE_SIZE`) into the next 4 bytes of the page header (4..8).
+---
+
+### 2. `read_page` API
 **Description:**  
 Reads a page from a disk/file into memory.
 
@@ -74,7 +119,7 @@ Populates the given memory page with data read from the file.
 
 ---
 
-### 2.`write_page` API
+### 3.`write_page` API
 **Description:**  
 Write a page from memory to disk/file.
 
@@ -96,7 +141,7 @@ Writes the contents of the given memory page to the file at the specified page o
 
 ---
 
-### 3.`page_count` API
+### 4.`page_count` API
 **Description:**  
 To get total number of pages in a file
 
@@ -116,7 +161,7 @@ Total number of pages present in the file.
 3. Return the page count.
 ---
 
-### 4. `page_free_space` API
+### 5. `page_free_space` API
 **Description:**  
 To calculate the total amount of free space left in the page.
 
@@ -137,7 +182,7 @@ Total amount of freespace left in the page.
 4. Return the free space.
 ---
 
-### 5. `page_add_data` API
+### 6. `page_add_data` API
 **Description:**
 Adds raw data to the file.
 
@@ -153,13 +198,23 @@ pub fn page_add_data(file: &mut File, data: &[u8])
 Data inserted in the file.
 
 **Implementation:**
-1. Get the **total number of pages** in the file using `page_count` API.
-2. Read the **last page** into memory using `read_page` API.
-3. Check **free space** in the page using `page_free_space` API.
-4. If the last page has enough free space to store the data and its ItemId:
-    a. Calculate the insertion offset from the upper pointer.
-    b. Copy the data into the page buffer.
-    c. Update the upper pointer in the page header.
-    d. Write the page back to disk.
-5. If the data does not fit, a new page must be created to insert the data (currently a TODO).
+1. Get the **total number of pages** in the file using [`page_count`](#4page_count-api) API.
+2. Read the **last page** into memory using [`read_page`](#2-read_page-api) API.
+3. Check **free space** in the page using [`page_free_space`](#5-page_free_space-api) API.
+4. If the last page has enough free space to store the data and its ItemId 
+(i.e., if `free_space >= data.size() + ITEM_ID_SIZE`):
+    a. Calculate the **insertion offset** from the upper pointer.
+        `start = upper - data.len()`
+    b. Copy the data bytes into the page buffer starting at this offset.
+    c. Update the **upper pointer** in the page header to the new start of free space.
+    d. Write the **ItemId entry** (offset and length of the data) at the position indicated by the lower pointer.
+    e. Update the **lower pointer** in the page header to account for the newly added ItemId (`lower += ITEM_ID_SIZE`).
+    f. Write the updated page back to disk using [`write_page`](#3write_page-api) API.
+5. If the last page does not have enough free space:
+    a. [TODO]
 ---
+
+
+* [Code - Github](https://github.com/hemanth-sunkireddy/Storage-Manager)
+* **Reference 1**: API Formats – [Storage Manager Course Assignment Link](http://www.cs.iit.edu/~glavic/cs525/2023-spring/project/assignment-1/)
+* **Reference 2**: [Postgres Internals – Page Layouts & Data](https://www.postgresql.org/docs/current/storage-page-layout.html)

@@ -28,3 +28,32 @@
     - For example: loads_from - disk page -> memory page
     - stores_to - memory page -> disk page.
 5. store_to function should have write_to disk function: Inputs: File Name, page and Outputs: Result
+
+
+
+### 6. `page_update_data` API
+**Description:**
+Adds raw data to the file.
+
+**Function:**  
+```rust
+pub fn page_add_data(file: &mut File, data: &[u8])
+```
+**Input:** 
+`file:` The file to which data should be added.
+`data:` The raw bytes to insert into the page.
+
+**Output:** 
+Data inserted in the file.
+
+**Implementation:**
+1. Get the **total number of pages** in the file using `page_count` API.
+2. Read the **last page** into memory using `read_page` API.
+3. Check **free space** in the page using `page_free_space` API.
+4. If the last page has enough free space to store the data and its ItemId:
+    a. Calculate the insertion offset from the upper pointer.
+    b. Copy the data into the page buffer.
+    c. Update the upper pointer in the page header.
+    d. Write the page back to disk.
+5. If the data does not fit, a new page must be created to insert the data (currently a TODO).
+---

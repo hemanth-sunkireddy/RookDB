@@ -1,12 +1,14 @@
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom, Read, ErrorKind, Error, Write};
 
-use crate::raw_page::{Page, PAGE_SIZE};
+use crate::raw_page::{Page, PAGE_SIZE, init_page};
 
 // Create Page 
 pub fn create_page(file: &mut File) -> io::Result<u32> {
     // Create an empty page (all zeros)
-    let page = Page::new();
+    let mut page = Page::new();
+
+    init_page(&mut page);
 
     // Get current file size
     let file_size = file.metadata()?.len();
@@ -20,7 +22,7 @@ pub fn create_page(file: &mut File) -> io::Result<u32> {
     // Write the zero-filled page
     file.write_all(&page.data)?;
 
-    println!("Created new page {} at offset {}", page_num, file_size);
+    println!("Created new Page with Id: {} at Offset: {} position in the file.", page_num, file_size);
 
     Ok(page_num) // return the page number of the newly created page
 }
