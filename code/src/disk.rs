@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom, Read, ErrorKind, Error, Write};
 
-use crate::raw_page::{Page, PAGE_SIZE, init_page};
+use crate::page::{Page, PAGE_SIZE, init_page};
 
 // Create Page 
 pub fn create_page(file: &mut File) -> io::Result<u32> {

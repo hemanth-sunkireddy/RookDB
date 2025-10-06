@@ -1,10 +1,8 @@
 use std::fs::OpenOptions;
 use std::io;
 
-mod disk;
-mod raw_page;
-use crate::disk::{create_page, read_page, write_page};
-use crate::raw_page::{page_add_data, Page};
+use storage_manager::disk::{create_page, read_page};
+use storage_manager::page::{page_add_data, Page};
 
 pub const CATALOG_PATH: &str = "database/global/catalog.dat"; // Catalog file path
 
@@ -15,6 +13,7 @@ fn main() -> io::Result<()> {
     let mut file_pointer = OpenOptions::new()
         .read(true)
         .write(true)
+        .create(true) 
         .open(CATALOG_PATH)?;
 
     /*
