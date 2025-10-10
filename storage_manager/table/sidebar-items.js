@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TABLE_HEADER_SIZE"],"fn":["init_table"],"struct":["Table","TableHeader"]};

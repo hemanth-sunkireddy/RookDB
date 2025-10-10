@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["disk","page"]};
+window.SIDEBAR_ITEMS = {"mod":["disk","page","table"]};
