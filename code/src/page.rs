@@ -1,5 +1,5 @@
-use std::fs::File;
-use std::io;
+use std::fs::{File};
+use std::io::{self, SeekFrom, Seek, Read};
 
 pub const PAGE_SIZE: usize = 8192; // Page size - storing as 8 bytes and as usize only because most pointers(file pointers and otheres requires it to be 8 bytes)
 pub const PAGE_HEADER_SIZE: u32 = 8;
@@ -40,11 +40,19 @@ pub fn init_page(page: &mut Page) {
 }
 
 pub fn page_count(file: &mut File) -> io::Result<u32> {
-    // Get current file size
-    let file_size = file.metadata()?.len(); // u64
-    let total_pages = file_size / PAGE_SIZE as u64;
-    Ok(total_pages as u32)
+    // Move cursor to the beginning of the file
+    file.seek(SeekFrom::Start(0))?;
+    
+    // Read the first 4 bytes representing total page count
+    let mut buffer = [0u8; 4];
+    file.read_exact(&mut buffer)?;
+    
+    // Convert the 4 bytes (little-endian) into a u32 value
+    let total_pages = u32::from_le_bytes(buffer);
+    
+    Ok(total_pages)
 }
+
 
 pub fn page_free_space(page: &Page) -> io::Result<u32> {
     // Get Lower and Upper of page

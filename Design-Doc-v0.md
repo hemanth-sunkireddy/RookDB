@@ -1,5 +1,30 @@
 ## Storage Manager Design Doc - version 0
 
+
+![File/Table Layout](/Storage_Manager/assets/Design-Doc/File-layout.jpeg)
+![Initial Page Layout](/Storage_Manager/assets/Design-Doc/Initial-page-layout.jpeg)
+
+### Table - Physical Layout
+```rust
+pub struct Table {
+    pub data: Vec<u8>, // Fixed-size buffer holds the raw bytes of a table.
+}
+```
+
+### Table - Logical Layout
+```rust
+pub const TABLE_HEADER_SIZE: u32 = 4;
+
+pub struct TableHeader {
+    pub page_count: u32, // Total Number of Pages in a Table
+}
+
+pub struct Table {
+    pub table_header: TableHeader;
+    // Pages are laid out consecutively after the table header on disk
+}
+```
+
 ### Page - Physical Layout
 ```rust
 pub const PAGE_SIZE: usize = 8192;
@@ -8,9 +33,6 @@ pub struct Page {
     pub data: Vec<u8>  // Fixed-size buffer holds the raw bytes of a page (PAGE_SIZE = 8KB)
 }
 ```
-
-![Initial Page Layout](/Storage_Manager/assets/Design-Doc/Initial-page-layout.jpeg)
-
 
 ### Page Header
 ```rust
@@ -36,40 +58,45 @@ pub struct ItemId {
 pub struct Page {
     pub header: PageHeader,
     pub item_id_data: Vec<ItemId>,
+    // Tuples and their metadata are organized within the page after the header
 }
 ```
 
+* **Table** and **File** are used interchangeably in the document. Both Represent same.
 ---
 
 ## Currently Implemented API's
-0. Create Page
+0. Init Table
 1. Init Page
-2. Read Page
-3. Write Page
-4. Page Count
-5. Page Free Space
-6. Page Add Data
+2. Page Count
+3. Create Page
+4. Read Page
+5. Write Page
+6. Page Free Space
+7. Page Add Data
+
+## Ongoing API's
+0. Create Table
+1. Add Tuple
 
 ---
+### 0. `init_table` API
+**Description:**
 
-### 0. `create_page` API
-**Description:**  
-Create a page in disk for a file.
+* Initializes the **Table Header** by writing the **Page Count (0)** into the first 4 bytes of the table file.
 
 **Function:**  
 ```rust
-pub fn create_page(file: &mut File)
+pub fn init_table(file: &mut File)
 ```
 **Input:** 
-`file:` file to create to a file
+`file:` File pointer to update Table Header.
 
 **Output:** 
-Create a page at the end of the file.
+Table header updated with **page_count**.
 
 **Implementation:**
-1. Initializes a new page in memory with all zeros (PAGE_SIZE bytes).
-2. Moves the file cursor to the end of the file.
-3. Writes the entire zero-filled page to the file, effectively creating a new page on disk.
+1. Write the page count (**TABLE_HEADER_SIZE**) into the first 4 bytes of the table header (0..4).
 ---
 
 ### 1. `init_page` API
@@ -94,7 +121,46 @@ Page header updated with lower and upper offsets.
 2. Write the upper offset (`PAGE_SIZE`) into the next 4 bytes of the page header (4..8).
 ---
 
-### 2. `read_page` API
+### 2.`page_count` API
+**Description:**  
+To get total number of pages in a file
+
+**Function:**  
+```rust
+pub fn page_count(file: &mut File)
+```
+**Input:** 
+`file:` file to calculate number of pages.
+
+**Output:** 
+Total number of pages present in the file.
+
+**Implementation:**
+1. Read the first 4 bytes of the file; these 4 bytes are the **file header**, and the file header’s first 4 bytes store the page count.
+2. Return the total page count.
+---
+
+### 3. `create_page` API
+**Description:**  
+Create a page in disk for a file.
+
+**Function:**  
+```rust
+pub fn create_page(file: &mut File)
+```
+**Input:** 
+`file:` file to create to a file
+
+**Output:** 
+Create a page at the end of the file.
+
+**Implementation:**
+1. Initializes a new page **in memory** using **init_page** API.
+2. Moves the file cursor to the end of the file.
+3. Writes the initialized in-memory page to the file and **updates the file header** by incrementing the page count stored in the first 4 bytes.
+---
+
+### 4. `read_page` API
 **Description:**  
 Reads a page from a disk/file into memory.
 
@@ -111,15 +177,15 @@ pub fn read_page(file: &mut File, page: &mut Page, page_num: u32)
 Populates the given memory page with data read from the file.
 
 **Implementation:**
-1. Calculates the **offset** as `page_num * PAGE_SIZE` and moves the file cursor to the correct position.
-2. Reads data from that offset position up to `offset + PAGE_SIZE` and copies it into the page memory.
+1. Calculates the **offset** as **TABLE_HEADER_SIZE + (page_num * PAGE_SIZE)** and moves the file cursor to the correct position.
+2. Reads data from that offset position up to **offset + PAGE_SIZE** and copies it into the page memory.
 
 **Cases Handled:**
 1. Checks the file size and returns an error if the requested page does not exist in the file.
 
 ---
 
-### 3.`write_page` API
+### 5.`write_page` API
 **Description:**  
 Write a page from memory to disk/file.
 
@@ -141,27 +207,7 @@ Writes the contents of the given memory page to the file at the specified page o
 
 ---
 
-### 4.`page_count` API
-**Description:**  
-To get total number of pages in a file
-
-**Function:**  
-```rust
-pub fn page_count(file: &mut File)
-```
-**Input:** 
-`file:` file to calculate number of pages.
-
-**Output:** 
-Total number of pages present in the file.
-
-**Implementation:**
-1. Get `file size` in bytes using file.metadata.len().
-2. Divide by `PAGE_SIZE` to get total pages.
-3. Return the page count.
----
-
-### 5. `page_free_space` API
+### 6. `page_free_space` API
 **Description:**  
 To calculate the total amount of free space left in the page.
 
@@ -182,7 +228,7 @@ Total amount of freespace left in the page.
 4. Return the free space.
 ---
 
-### 6. `page_add_data` API
+### 7. `page_add_data` API
 **Description:**
 Adds raw data to the file.
 

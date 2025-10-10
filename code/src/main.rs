@@ -3,10 +3,12 @@ use std::io;
 
 use storage_manager::disk::{create_page, read_page};
 use storage_manager::page::{page_add_data, Page};
+use storage_manager::table::{init_table};
 
 pub const CATALOG_PATH: &str = "database/global/catalog.dat"; // Catalog file path
 
 fn main() -> io::Result<()> {
+    println!("----");
     println!("Welcome to Storage Manager");
 
     // Create File Pointer
@@ -15,6 +17,14 @@ fn main() -> io::Result<()> {
         .write(true)
         .create(true) 
         .open(CATALOG_PATH)?;
+
+    println!("Created File Pointer Successfully.");
+
+    // Init Table
+    init_table(&mut file_pointer)?;
+
+    println!("Table Initialised with Table Header");
+    
 
     /*
     Create a Page in file

@@ -1,30 +1,39 @@
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom, Read, ErrorKind, Error, Write};
 
-use crate::page::{Page, PAGE_SIZE, init_page};
+use crate::page::{Page, PAGE_SIZE, init_page, page_count};
 
 // Create Page 
 pub fn create_page(file: &mut File) -> io::Result<u32> {
-    // Create an empty page (all zeros)
+    // Create an empty page (all zeros) - In Memory
     let mut page = Page::new();
-
     init_page(&mut page);
 
-    // Get current file size
-    let file_size = file.metadata()?.len();
+    println!("Created Page In Memory Successfully.");
 
-    // Calculate the page number for the new page
-    let page_num = (file_size / PAGE_SIZE as u64) as u32;
+    // --- Step 1: Read existing page_count from File Header (first 4 bytes)
+    let mut page_count =  page_count(file)?; // total pages currently in file
 
-    // Move cursor to end of file
+    println!("Page count: {}", page_count);
+    
+    // --- Step 2: The new page number = current page_count
+    let page_num = page_count;
+
+    // --- Step 3: Move to end of file and append new page
     file.seek(SeekFrom::End(0))?;
-
-    // Write the zero-filled page
     file.write_all(&page.data)?;
 
-    println!("Created new Page with Id: {} at Offset: {} position in the file.", page_num, file_size);
+    // --- Step 4: Update page_count in file header
+    page_count += 1;
+    file.seek(SeekFrom::Start(0))?;
+    file.write_all(&page_count.to_le_bytes())?;
 
-    Ok(page_num) // return the page number of the newly created page
+    println!(
+        "Created new Page with Id: {} (total pages = {})",
+        page_num, page_count
+    );
+
+    Ok(page_num)
 }
 
 // Read page from disk
