@@ -1,8 +1,9 @@
 ## Storage Manager Design Doc - version 0
 
+![File/Table Layout](File-layout.jpeg)
+![Initial Page Layout](Initial-page-layout.jpeg)
 
-![File/Table Layout](/Storage_Manager/assets/Design-Doc/File-layout.jpeg)
-![Initial Page Layout](/Storage_Manager/assets/Design-Doc/Initial-page-layout.jpeg)
+
 
 ### Table - Physical Layout
 ```rust
@@ -13,14 +14,14 @@ pub struct Table {
 
 ### Table - Logical Layout
 ```rust
-pub const TABLE_HEADER_SIZE: u32 = 4;
+pub const TABLE_HEADER_SIZE: u32 = 8192;
 
 pub struct TableHeader {
     pub page_count: u32, // Total Number of Pages in a Table
 }
 
 pub struct Table {
-    pub table_header: TableHeader;
+    pub table_header: TableHeader,
     // Pages are laid out consecutively after the table header on disk
 }
 ```
@@ -83,7 +84,7 @@ pub struct Page {
 ### 0. `init_table` API
 **Description:**
 
-* Initializes the **Table Header** by writing the **Page Count (0)** into the first 4 bytes of the table file.
+* Initializes the **Table Header** by writing the **first page** (8192 bytes) into the table file with 0's. The first 4 bytes represent the **Page Count** (0),
 
 **Function:**  
 ```rust
@@ -93,16 +94,23 @@ pub fn init_table(file: &mut File)
 `file:` File pointer to update Table Header.
 
 **Output:** 
-Table header updated with **page_count**.
+Table header (first page) initialized with page_count = 0 in the first 4 bytes and remaining bytes set to zero.
 
 **Implementation:**
-1. Write the page count (**TABLE_HEADER_SIZE**) into the first 4 bytes of the table header (0..4).
+1. Move the file cursor to the beginning of the file.
+2. Allocate a buffer of 8192 bytes (**TABLE_HEADER_SIZE**) initialized to zero.
+3. Write the entire 8192-byte buffer (including the page count) to disk, marking the creation of the first table page.
+
+**Test Case:**
+1. Created a new file to simulate a fresh table.
+2. Initialized the table header using **init_table** API, setting the page count to 0.
+3. Verified that the file size obtained from **metadata().len()** equals **TABLE_HEADER_SIZE** (8192 bytes), confirming that the entire header page was written successfully.
 ---
 
 ### 1. `init_page` API
 **Description:**
 
-* Initializes the **Page Header** with two offset values:
+* Initializes the **Page Header** with two offset values for **In Memory Page**:
     - **Lower Offset** (`PAGE_HEADER_SIZE`) → bytes 0..4
     - **Upper Offset** (`PAGE_SIZE`) → bytes 4..8
 
@@ -111,7 +119,7 @@ Table header updated with **page_count**.
 pub fn init_page(page:&mut Page)
 ```
 **Input:** 
-`page:` Page to set Header - Lower and Upper Offsets.
+`page:` **In Memory Page** to set Header - Lower and Upper Offsets.
 
 **Output:** 
 Page header updated with lower and upper offsets.
@@ -119,10 +127,15 @@ Page header updated with lower and upper offsets.
 **Implementation:**
 1. Write the lower offset (`PAGE_HEADER_SIZE`) into the first 4 bytes of the page header (0..4).
 2. Write the upper offset (`PAGE_SIZE`) into the next 4 bytes of the page header (4..8).
+
+**Test Case:**
+1. Created a new in-memory page with zeroed data.
+2. Initialized the page header using init_page API, setting the lower and upper offsets.
+3. Checked whether the first 4 bytes were **PAGE_HEADER_SIZE** and the next 4 bytes were **PAGE_SIZE**.
 ---
 
 ### 2.`page_count` API
-**Description:**  
+**Description:**
 To get total number of pages in a file
 
 **Function:**  
@@ -136,8 +149,14 @@ pub fn page_count(file: &mut File)
 Total number of pages present in the file.
 
 **Implementation:**
-1. Read the first 4 bytes of the file; these 4 bytes are the **file header**, and the file header’s first 4 bytes store the page count.
-2. Return the total page count.
+1. Use the **read_page()** function to read the first page (page ID 0) from the file into memory.
+2. Extract the **first 4 bytes** from the in-memory page buffer — these bytes represent the page count stored in the table header.
+3. Return the first 4 bytes as page count.
+
+**Test Case:**
+1. Create a temp table file.
+2. Initialize it using `init_table()`.
+3. Call `page_count()` to verify it correctly reads 0.
 ---
 
 ### 3. `create_page` API
@@ -152,12 +171,17 @@ pub fn create_page(file: &mut File)
 `file:` file to create to a file
 
 **Output:** 
-Create a page at the end of the file.
+1. Create a page at the end of the file.
+2. Update the File Header with **Page Count**.
 
 **Implementation:**
-1. Initializes a new page **in memory** using **init_page** API.
-2. Moves the file cursor to the end of the file.
-3. Writes the initialized in-memory page to the file and **updates the file header** by incrementing the page count stored in the first 4 bytes.
+1. Initializes a new page **in memory** using **init_page** API (update page header - lower and upper).
+2. Reads the **current page count** from the file using the **page_count** API.
+3. Moves the file cursor to the end of the file.
+4. Writes the initialized in-memory page to the file and **updates the file header** by incrementing the page count stored in the first 4 bytes.
+
+**Test Case:**
+1. Verified using `File Size`, `Page Count` and `Page Headers` before and after creating the page using file metadata.
 ---
 
 ### 4. `read_page` API
@@ -262,5 +286,6 @@ Data inserted in the file.
 
 
 * [Code - Github](https://github.com/hemanth-sunkireddy/Storage-Manager)
+* [Code Documentation](https://hemanth-sunkireddy.github.io/Storage-Manager/storage_manager/all.html)
 * **Reference 1**: API Formats – [Storage Manager Course Assignment Link](http://www.cs.iit.edu/~glavic/cs525/2023-spring/project/assignment-1/)
 * **Reference 2**: [Postgres Internals – Page Layouts & Data](https://www.postgresql.org/docs/current/storage-page-layout.html)

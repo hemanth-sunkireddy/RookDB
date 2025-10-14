@@ -7,9 +7,12 @@ use crate::page::{Page, PAGE_SIZE, init_page, page_count};
 pub fn create_page(file: &mut File) -> io::Result<u32> {
     // Create an empty page (all zeros) - In Memory
     let mut page = Page::new();
+    println!("Initializing a In Memory Page with Page Headers...");
+    // Initialise Page Header
     init_page(&mut page);
 
-    println!("Created Page In Memory Successfully.");
+    // Print the first 8 bytes (page header: lower + upper offsets)
+    println!("Created Page. Page Data: {:?}", &page.data[0..8]);
 
     // --- Step 1: Read existing page_count from File Header (first 4 bytes)
     let mut page_count =  page_count(file)?; // total pages currently in file
