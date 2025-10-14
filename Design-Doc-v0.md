@@ -201,12 +201,14 @@ pub fn read_page(file: &mut File, page: &mut Page, page_num: u32)
 Populates the given memory page with data read from the file.
 
 **Implementation:**
-1. Calculates the **offset** as **TABLE_HEADER_SIZE + (page_num * PAGE_SIZE)** and moves the file cursor to the correct position.
+1. Calculates the **offset** as **(page_num * PAGE_SIZE)** and moves the file cursor to the correct position.
 2. Reads data from that offset position up to **offset + PAGE_SIZE** and copies it into the page memory.
 
 **Cases Handled:**
 1. Checks the file size and returns an error if the requested page does not exist in the file.
 
+**Test Case:**
+* Verified **read_page** API correctly reads one full page — file size equals PAGE_SIZE and data matches the original written content.
 ---
 
 ### 5.`write_page` API
@@ -229,6 +231,9 @@ Writes the contents of the given memory page to the file at the specified page o
 1. Calculates the **offset** as `page_num * PAGE_SIZE` and moves the file cursor to the correct position.
 2. copy the contents of the given memory page from offset to `offset + PAGE_SIZE` positions to the file.
 
+**Test Case:**
+* Verified **write_page** API correctly writes one full page — by using write_page wrote some content to the page and read back the same page to confirm that the written data matches exactly, and the file size is at least PAGE_SIZE.
+
 ---
 
 ### 6. `page_free_space` API
@@ -250,6 +255,10 @@ Total amount of freespace left in the page.
 2. Read the `upper pointer` from the next 4 bytes of the page.
 3. Calculate `free space`  = `upper - lower`.
 4. Return the free space.
+
+**Test Case:**
+Verified that **page_free_space()** correctly calculates free space (upper - lower) for a newly created data page initialized using init_table() and create_page().
+Confirmed that the page header offsets (lower = PAGE_HEADER_SIZE, upper = PAGE_SIZE) and total page count are consistent and accurate.
 ---
 
 ### 7. `page_add_data` API
