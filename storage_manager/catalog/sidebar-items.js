@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CATALOG_DIR","CATALOG_FILE","DATA_DIR","TABLE_DIR","TABLE_FILE_TEMPLATE"],"fn":["init_catalog"],"struct":["Catalog","Column","Table"]};
