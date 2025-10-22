@@ -77,3 +77,18 @@ pub fn load_catalog() -> Catalog {
     }
 }
 
+
+pub fn save_catalog(catalog: &Catalog) {
+    let catalog_path = Path::new(CATALOG_FILE);
+
+    // Serialize the Catalog struct to pretty JSON
+    let json = serde_json::to_string_pretty(catalog)
+        .expect("Failed to serialize catalog to JSON");
+
+    // Write JSON to the catalog file
+    fs::write(catalog_path, json)
+        .expect("Failed to write catalog file to disk");
+
+    println!("Catalog File updated with In Memory Data {}", catalog_path.display());
+}
+

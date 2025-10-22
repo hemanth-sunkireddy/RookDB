@@ -1,11 +1,12 @@
-use std::fs::OpenOptions;
-use std::io::{self, Read, Seek, SeekFrom};
+// use std::fs::OpenOptions;
+// use std::io::{self, Read, Seek, SeekFrom};
+use std::io::{self};
 
 // use storage_manager::disk::{create_page, read_page};
-use storage_manager::disk::create_page;
+// use storage_manager::disk::create_page;
 // use storage_manager::page::{page_add_data, Page};
-use storage_manager::catalog::{CATALOG_FILE, init_catalog, load_catalog};
-use storage_manager::table::init_table;
+use storage_manager::catalog::{Column, Table, init_catalog, load_catalog, save_catalog};
+// use storage_manager::table::init_table;
 
 fn main() -> io::Result<()> {
     println!("----");
@@ -17,7 +18,7 @@ fn main() -> io::Result<()> {
 
     // Load Catalog File
     println!("Loading Catalog...\n");
-    let catalog = load_catalog();
+    let mut catalog = load_catalog();
 
     if catalog.tables.len() == 0 {
         println!("No tables found in catalog.\n");
@@ -31,7 +32,27 @@ fn main() -> io::Result<()> {
             println!();
         }
     }
-    
+
+    let user_table = Table {
+        columns: vec![
+            Column {
+                name: "id".to_string(),
+                data_type: "INT".to_string(),
+            },
+            Column {
+                name: "username".to_string(),
+                data_type: "TEXT".to_string(),
+            },
+            Column {
+                name: "email".to_string(),
+                data_type: "TEXT".to_string(),
+            },
+        ],
+    };
+    catalog.tables.insert("users".to_string(), user_table);
+
+    save_catalog(&catalog);
+
     // Create File Pointer
     // let mut file_pointer = OpenOptions::new()
     //     .read(true)

@@ -34,7 +34,28 @@ pub struct Catalog {
 ```
 
 ### Example Catalog File
-
+```json
+{
+  "tables": {
+    "users": {
+      "columns": [
+        {
+          "name": "id",
+          "data_type": "INT"
+        },
+        {
+          "name": "username",
+          "data_type": "TEXT"
+        },
+        {
+          "name": "email",
+          "data_type": "TEXT"
+        }
+      ]
+    }
+  }
+}
+```
 
 ### File and Page Layout
 ![File/Table Layout](./assets/Design-Doc/File-layout.jpeg)
@@ -146,20 +167,44 @@ pub fn init_catalog()
 ### 1. **load_catalog** API
 
 **Description:**  
-Loads the catalog table metadata into memory as a **Catalog struct**.
+* Loads the catalog table metadata into memory as a **Catalog struct**.
 
 **Function:**  
 ```rust
 pub fn load_catalog() -> Catalog
 ```
 **Ouput:**
-1. Returns a valid Catalog struct containing table metadata.
+*  Returns a valid Catalog struct containing table metadata.
 
 **Implementation:**
-Reads the catalog file, validates its contents, and deserializes it into a Catalog struct.
+* Reads the catalog file, validates its contents, and deserializes it into a Catalog struct.
 
 **Test Case:**
-1. Call load_catalog() API and verify it returns a valid Catalog instance without errors.
+* Call load_catalog() API and verify it returns a valid Catalog instance without errors.
+
+
+### 2. **save_catalog** API
+
+**Description:**  
+* Writes the in-memory Catalog structure (containing table metadata) back to disk in JSON format.
+
+**Function:**  
+```rust
+pub fn save_catalog(catalog: &Catalog)
+```
+
+**Input:**
+* catalog: A reference to a Catalog struct in memory that holds all table definitions.
+
+**Ouput:**
+* Writes the catalog data to `CATALOG_FILE`.
+
+**Implementation:**
+* Serializes the given Catalog struct into a  JSON string and writes it to the catalog file path.
+
+**Test Case:**
+1. Modify the in-memory Catalog instance by adding a new table.
+2. Call save_catalog(&catalog) and verify that the number of tables has increased by one compared to the count before saving.
 
 ### 0. **init_table** API
 **Description:**
