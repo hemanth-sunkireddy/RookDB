@@ -1,45 +1,49 @@
-use crate::page::{Page};
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
+use std::fs;
+use std::path::Path;
 
-pub const CATALOG_SIZE: usize = 8192; // Catalog size = 1 page
-pub const CATALOG_HEADER_SIZE: u32 = 4; // Catalog Header Size - 2 bytes
+pub const DATA_DIR: &str = "database";
+pub const CATALOG_DIR: &str = "database/global";
+pub const CATALOG_FILE: &str = "database/global/catalog.json";
+pub const TABLE_DIR: &str = "database/base";
+pub const TABLE_FILE_TEMPLATE: &str = "database/base/{table}.dat";
 
-pub struct CatalogHeader {
-    pub total_pages: u32, // number of pages in catalog - 4 bytes to store this value
+
+
+#[derive(Serialize, Deserialize)]
+pub struct Column {
+    pub name: String,
+    pub data_type: String,
 }
 
-impl CatalogHeader {
-    pub fn new() -> Self {
-        Self { total_pages: 1 } // start with 1 page
-    }
+#[derive(Serialize, Deserialize)]
+pub struct Table {
+    pub columns: Vec<Column>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Catalog {
-    pub header: CatalogHeader,
-    pub pages: Vec<Page>, // list of pages in catalog
+    pub tables: HashMap<String, Table>,
 }
 
-impl Catalog {
-    pub fn new() -> Self {
-        let mut pages = Vec::new();
-        pages.push(Page::new()); // create first page
+pub fn init_catalog() {
+    let catalog_path = Path::new(CATALOG_FILE);
 
-        Self {
-            header: CatalogHeader::new(),
-            pages,
+    // Step 1: Create directories if not exist
+    if let Some(parent) = catalog_path.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent).expect("Failed to create catalog directory");
         }
     }
 
-    /// Parse a Catalog from raw bytes (deserialize header only for now)
-    pub fn read_catalog(bytes: &[u8]) -> Self {
-        if bytes.len() < 4 {
-            panic!("Catalog file too small to contain header!");
-        }
-
-        let total_pages = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
-
-        Self {
-            header: CatalogHeader { total_pages },
-            pages: Vec::new(), // later: load real pages from file
-        }
+    // Step 2: Create catalog.json if not exist
+    if !catalog_path.exists() {
+        let empty_catalog = Catalog { tables: HashMap::new() };
+        let json = serde_json::to_string_pretty(&empty_catalog).expect("Failed to serialize empty catalog");
+        fs::write(catalog_path, json).expect("Failed to write catalog file");
+        println!("Created new catalog file at {}", catalog_path.display());
+    } else {
+        println!("Catalog file already exists at {}", catalog_path.display());
     }
 }

@@ -1,7 +1,44 @@
-## Storage Manager Design Doc - version 0
+<h2 align="center">
+Storage Manager Design Doc - Version 0
+</h2>
 
-![File/Table Layout](File-layout.jpeg)
-![Initial Page Layout](Initial-page-layout.jpeg)
+### Catalog Layout
+![Catalog Layout](./assets/Design-Doc/Catalog-Layout.png)
+
+### Storage Paths
+```rust
+pub const DATA_DIR: &str = "database";
+pub const CATALOG_DIR: &str = "database/global";
+pub const CATALOG_FILE: &str = "database/global/catalog.json";
+pub const TABLE_DIR: &str = "database/base";
+pub const TABLE_FILE_TEMPLATE: &str = "database/base/{table}.dat";
+```
+
+### Catalog Data Structures
+```rust
+#[derive(Serialize, Deserialize)]
+pub struct Column {
+    pub name: String,
+    pub data_type: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Table {
+    pub columns: Vec<Column>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Catalog {
+    pub tables: HashMap<String, Table>,
+}
+```
+
+### Example Catalog File
+
+
+### File and Page Layout
+![File/Table Layout](./assets/Design-Doc/File-layout.jpeg)
+![Initial Page Layout](./assets/Design-Doc/Initial-page-layout.jpeg)
 
 
 
@@ -67,6 +104,10 @@ pub struct Page {
 ---
 
 ## Currently Implemented API's
+0. Init Catalog
+1. Load Catalog
+2. Save Catalog
+3. Create Table
 0. Init Table
 1. Init Page
 2. Page Count
@@ -74,17 +115,38 @@ pub struct Page {
 4. Read Page
 5. Write Page
 6. Page Free Space
-7. Page Add Data
 
 ## Ongoing API's
-0. Create Table
-1. Add Tuple
+1. Add Tuple/Add Data to Page
+2. Read Item/Get Tuple
+3. Delete Item
+4. Compact Page
+5. Search in Table for Tuple
 
 ---
-### 0. `init_table` API
+## Completed APIs with Test Cases
+### 0. **init_catalog** API
+
+**Description:**  
+Creates `catalog.json` if it doesn’t exist and initializes it with an empty catalog (`{ "tables": {} }`).
+
+**Function:**  
+```rust
+pub fn init_catalog()
+```
+
+**Implementation:**
+1. Check if database/global/catalog.json exists.
+2. If not, create parent directories and an empty file with data **{ "tables": {} }**.
+
+**Test Case:**
+1. Run init_catalog().
+2. Verify file is created with valid JSON.
+
+### 0. **init_table** API
 **Description:**
 
-* Initializes the **Table Header** by writing the **first page** (8192 bytes) into the table file with 0's. The first 4 bytes represent the **Page Count** (0),
+* Initializes the **Table Header** by writing the **first page** (8192 bytes) into the table file with 0's. The first 4 bytes represent the **Page Count** (0).
 
 **Function:**  
 ```rust
@@ -257,11 +319,14 @@ Total amount of freespace left in the page.
 4. Return the free space.
 
 **Test Case:**
-Verified that **page_free_space()** correctly calculates free space (upper - lower) for a newly created data page initialized using init_table() and create_page().
-Confirmed that the page header offsets (lower = PAGE_HEADER_SIZE, upper = PAGE_SIZE) and total page count are consistent and accurate.
+* Verified that **page_free_space()** correctly calculates free space (upper - lower) for a newly created data page initialized using init_table() and create_page().
+* Confirmed that the page header offsets (lower = PAGE_HEADER_SIZE, upper = PAGE_SIZE) and total page count are consistent and accurate.
 ---
 
-### 7. `page_add_data` API
+## Ongoing APIs and Implementations
+### 0. `create_table` API
+
+### 1. `page_add_data` API
 **Description:**
 Adds raw data to the file.
 

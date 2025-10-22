@@ -5,19 +5,23 @@ use std::io::{self, Read, Seek, SeekFrom};
 use storage_manager::disk::{create_page};
 // use storage_manager::page::{page_add_data, Page};
 use storage_manager::table::{init_table};
+use storage_manager::catalog::{init_catalog, CATALOG_FILE};
 
-pub const CATALOG_PATH: &str = "database/global/catalog.dat"; // Catalog file path
 
 fn main() -> io::Result<()> {
     println!("----");
     println!("Welcome to Storage Manager\n");
+
+    // Initialising Catalog File
+    println!("Initialising Catalog File\n");
+    init_catalog();
 
     // Create File Pointer
     let mut file_pointer = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true) 
-        .open(CATALOG_PATH)?;
+        .open(CATALOG_FILE)?;
 
     println!("Initialising Table...");
 
