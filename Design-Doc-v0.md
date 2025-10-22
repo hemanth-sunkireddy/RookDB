@@ -143,6 +143,24 @@ pub fn init_catalog()
 1. Run init_catalog().
 2. Verify file is created with valid JSON.
 
+### 1. **load_catalog** API
+
+**Description:**  
+Loads the catalog table metadata into memory as a **Catalog struct**.
+
+**Function:**  
+```rust
+pub fn load_catalog() -> Catalog
+```
+**Ouput:**
+1. Returns a valid Catalog struct containing table metadata.
+
+**Implementation:**
+Reads the catalog file, validates its contents, and deserializes it into a Catalog struct.
+
+**Test Case:**
+1. Call load_catalog() API and verify it returns a valid Catalog instance without errors.
+
 ### 0. **init_table** API
 **Description:**
 

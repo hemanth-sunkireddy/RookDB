@@ -2,11 +2,10 @@ use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, SeekFrom};
 
 // use storage_manager::disk::{create_page, read_page};
-use storage_manager::disk::{create_page};
+use storage_manager::disk::create_page;
 // use storage_manager::page::{page_add_data, Page};
-use storage_manager::table::{init_table};
-use storage_manager::catalog::{init_catalog, CATALOG_FILE};
-
+use storage_manager::catalog::{CATALOG_FILE, init_catalog, load_catalog};
+use storage_manager::table::init_table;
 
 fn main() -> io::Result<()> {
     println!("----");
@@ -16,44 +15,59 @@ fn main() -> io::Result<()> {
     println!("Initialising Catalog File\n");
     init_catalog();
 
-    // Create File Pointer
-    let mut file_pointer = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true) 
-        .open(CATALOG_FILE)?;
+    // Load Catalog File
+    println!("Loading Catalog...\n");
+    let catalog = load_catalog();
 
-    println!("Initialising Table...");
+    if catalog.tables.len() == 0 {
+        println!("No tables found in catalog.\n");
+    } else {
+        println!("Loaded tables from catalog:\n");
+        for (table_name, table) in &catalog.tables {
+            println!("Table: {}", table_name);
+            for column in &table.columns {
+                println!("  Column: {} ({})", column.name, column.data_type);
+            }
+            println!();
+        }
+    }
+    
+    // Create File Pointer
+    // let mut file_pointer = OpenOptions::new()
+    //     .read(true)
+    //     .write(true)
+    //     .create(true)
+    //     .open(CATALOG_FILE)?;
+
+    // println!("Initialising Table...");
 
     // Init Table
-    init_table(&mut file_pointer)?;
+    // init_table(&mut file_pointer)?;
 
-    
     // Move cursor to start
-    file_pointer.seek(SeekFrom::Start(0))?;
+    // file_pointer.seek(SeekFrom::Start(0))?;
 
     // Read entire file
-    let mut buffer = Vec::new();
-    file_pointer.read_to_end(&mut buffer)?;
+    // let mut buffer = Vec::new();
+    // file_pointer.read_to_end(&mut buffer)?;
 
     // Table File Data
-    println!("Table Initialised with Table Header. Table Content: {:?}\n", buffer);
+    // println!("Table Initialised with Table Header. Table Content: {:?}\n", buffer);
 
-    println!("Creating Page in File...");
+    // println!("Creating Page in File...");
     /*
     Create a Page in file
     */
-    create_page(&mut file_pointer)?;
+    // create_page(&mut file_pointer)?;
     // println!("Page created successfully.");
 
     // Read entire file to verify create page
-    file_pointer.seek(SeekFrom::Start(0))?;
-    let mut buffer = Vec::new();
-    file_pointer.read_to_end(&mut buffer)?;
+    // file_pointer.seek(SeekFrom::Start(0))?;
+    // let mut buffer = Vec::new();
+    // file_pointer.read_to_end(&mut buffer)?;
 
     // Table File Data
-    println!("File Data after page creation: \n{:?}\n", buffer);
-
+    // println!("File Data after page creation: \n{:?}\n", buffer);
 
     // Create a Page in Memory
     // let mut page: Page = Page::new();

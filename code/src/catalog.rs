@@ -42,8 +42,38 @@ pub fn init_catalog() {
         let empty_catalog = Catalog { tables: HashMap::new() };
         let json = serde_json::to_string_pretty(&empty_catalog).expect("Failed to serialize empty catalog");
         fs::write(catalog_path, json).expect("Failed to write catalog file");
-        println!("Created new catalog file at {}", catalog_path.display());
+        println!("Catalog File Not exist. Created new catalog file at {}", catalog_path.display());
     } else {
         println!("Catalog file already exists at {}", catalog_path.display());
     }
 }
+
+pub fn load_catalog() -> Catalog {
+    let catalog_path = Path::new(CATALOG_FILE);
+
+    // Check if catalog file exists
+    if !catalog_path.exists() {
+        eprintln!("Catalog file does not exist at {}.", catalog_path.display());
+        return Catalog { tables: HashMap::new() };
+    }
+
+    // Read the catalog file
+    let data = fs::read_to_string(catalog_path);
+    let data = match data {
+        Ok(content) => content,
+        Err(err) => {
+            eprintln!("Failed to read catalog file: {}", err);
+            return Catalog { tables: HashMap::new() };
+        }
+    };
+
+    // Deserialize JSON into Catalog struct
+    match serde_json::from_str::<Catalog>(&data) {
+        Ok(catalog) => catalog,
+        Err(err) => {
+            eprintln!("Failed to parse catalog JSON: {}", err);
+            Catalog { tables: HashMap::new() }
+        }
+    }
+}
+
