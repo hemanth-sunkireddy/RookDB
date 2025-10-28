@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["CATALOG_DIR","CATALOG_FILE","DATA_DIR","TABLE_DIR","TABLE_FILE_TEMPLATE"],"fn":["init_catalog","load_catalog","save_catalog"],"struct":["Catalog","Column","Table"]};
+window.SIDEBAR_ITEMS = {"constant":["CATALOG_DIR","CATALOG_FILE","DATABASE_DIR","DATA_DIR","TABLE_DIR_TEMPLATE","TABLE_FILE_TEMPLATE"],"fn":["create_database","create_table","init_catalog","load_catalog","save_catalog"],"struct":["Catalog","Column","Database","Table"]};
