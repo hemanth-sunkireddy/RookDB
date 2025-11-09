@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["ITEM_ID_SIZE","PAGE_HEADER_SIZE","PAGE_SIZE"],"fn":["init_page","insert_tuple","load_csv_and_insert","page_count","page_free_space"],"struct":["Page"]};
+window.SIDEBAR_ITEMS = {"constant":["ITEM_ID_SIZE","PAGE_HEADER_SIZE","PAGE_SIZE"],"fn":["init_page","insert_tuple","load_csv_and_insert","page_count","page_free_space","show_tuples"],"struct":["Page"]};
