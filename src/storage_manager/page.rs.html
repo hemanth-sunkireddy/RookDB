@@ -60,9 +60,9 @@
 <a href=#60 id=60 data-nosnippet>60</a>    <span class="comment">// Get Lower and Upper of page
 <a href=#61 id=61 data-nosnippet>61</a>    </span><span class="kw">let </span>lower = u32::from_le_bytes(page.data[<span class="number">0</span>..<span class="number">4</span>].try_into().unwrap());
 <a href=#62 id=62 data-nosnippet>62</a>    <span class="kw">let </span>upper = u32::from_le_bytes(page.data[<span class="number">4</span>..<span class="number">8</span>].try_into().unwrap());
-<a href=#63 id=63 data-nosnippet>63</a>    <span class="macro">println!</span>(<span class="string">"UPPER: {}"</span>, upper);
-<a href=#64 id=64 data-nosnippet>64</a>    <span class="macro">println!</span>(<span class="string">"LOWER: {}"</span>, lower);
-<a href=#65 id=65 data-nosnippet>65</a>    <span class="comment">// Freespace is equal to upper - lower
+<a href=#63 id=63 data-nosnippet>63</a>    <span class="comment">// println!("UPPER: {}", upper);
+<a href=#64 id=64 data-nosnippet>64</a>    // println!("LOWER: {}", lower);
+<a href=#65 id=65 data-nosnippet>65</a>    // Freespace is equal to upper - lower
 <a href=#66 id=66 data-nosnippet>66</a>    </span><span class="prelude-val">Ok</span>(upper - lower)
 <a href=#67 id=67 data-nosnippet>67</a>}
 <a href=#68 id=68 data-nosnippet>68</a>
@@ -70,30 +70,30 @@
 <a href=#70 id=70 data-nosnippet>70</a>    <span class="comment">// Get total number of pages in the file
 <a href=#71 id=71 data-nosnippet>71</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>total_pages: u32 = page_count(file)<span class="question-mark">?</span>;
 <a href=#72 id=72 data-nosnippet>72</a>    <span class="kw">let </span><span class="kw-2">mut </span>last_page_num: u32 = total_pages - <span class="number">1</span>;
-<a href=#73 id=73 data-nosnippet>73</a>    <span class="macro">println!</span>(<span class="string">"Inserting into page {}"</span>, last_page_num);
+<a href=#73 id=73 data-nosnippet>73</a>    <span class="comment">// println!("Inserting into page {}", last_page_num);
 <a href=#74 id=74 data-nosnippet>74</a>
-<a href=#75 id=75 data-nosnippet>75</a>    <span class="comment">// Read last page into memory
+<a href=#75 id=75 data-nosnippet>75</a>    // Read last page into memory
 <a href=#76 id=76 data-nosnippet>76</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>last_page: Page = Page::new();
 <a href=#77 id=77 data-nosnippet>77</a>    read_page(file, <span class="kw-2">&amp;mut </span>last_page, last_page_num)<span class="question-mark">?</span>;
 <a href=#78 id=78 data-nosnippet>78</a>
 <a href=#79 id=79 data-nosnippet>79</a>    <span class="comment">// Calculate free space in the page
 <a href=#80 id=80 data-nosnippet>80</a>    </span><span class="kw">let </span>free_space: u32 = page_free_space(<span class="kw-2">&amp;</span>last_page)<span class="question-mark">?</span>;
-<a href=#81 id=81 data-nosnippet>81</a>    <span class="macro">println!</span>(<span class="string">"Free space in last page: {} bytes"</span>, free_space);
+<a href=#81 id=81 data-nosnippet>81</a>    <span class="comment">// println!("Free space in last page: {} bytes", free_space);
 <a href=#82 id=82 data-nosnippet>82</a>
-<a href=#83 id=83 data-nosnippet>83</a>    <span class="comment">// Total bytes required = tuple data + item header (offset + length)
+<a href=#83 id=83 data-nosnippet>83</a>    // Total bytes required = tuple data + item header (offset + length)
 <a href=#84 id=84 data-nosnippet>84</a>    </span><span class="kw">let </span>total_required = data.len() <span class="kw">as </span>u32 + ITEM_ID_SIZE;
 <a href=#85 id=85 data-nosnippet>85</a>
 <a href=#86 id=86 data-nosnippet>86</a>    <span class="kw">if </span>total_required &gt; free_space {
 <a href=#87 id=87 data-nosnippet>87</a>        <span class="comment">// Not enough space — create a new page
-<a href=#88 id=88 data-nosnippet>88</a>        </span><span class="macro">println!</span>(<span class="string">"Not enough free space in last page. Creating a new page..."</span>);
-<a href=#89 id=89 data-nosnippet>89</a>        create_page(file)<span class="question-mark">?</span>;
+<a href=#88 id=88 data-nosnippet>88</a>        // println!("Not enough free space in last page. Creating a new page...");
+<a href=#89 id=89 data-nosnippet>89</a>        </span>create_page(file)<span class="question-mark">?</span>;
 <a href=#90 id=90 data-nosnippet>90</a>        total_pages += <span class="number">1</span>;
 <a href=#91 id=91 data-nosnippet>91</a>        last_page_num = total_pages - <span class="number">1</span>;
 <a href=#92 id=92 data-nosnippet>92</a>
 <a href=#93 id=93 data-nosnippet>93</a>        <span class="comment">// Read the newly created page (it should be empty)
 <a href=#94 id=94 data-nosnippet>94</a>        </span>read_page(file, <span class="kw-2">&amp;mut </span>last_page, last_page_num)<span class="question-mark">?</span>;
-<a href=#95 id=95 data-nosnippet>95</a>        <span class="macro">println!</span>(<span class="string">"Inserting into newly created page {}"</span>, last_page_num);
-<a href=#96 id=96 data-nosnippet>96</a>    }
+<a href=#95 id=95 data-nosnippet>95</a>        <span class="comment">// println!("Inserting into newly created page {}", last_page_num);
+<a href=#96 id=96 data-nosnippet>96</a>    </span>}
 <a href=#97 id=97 data-nosnippet>97</a>
 <a href=#98 id=98 data-nosnippet>98</a>    <span class="comment">// === Insert into last_page (either old or new) ===
 <a href=#99 id=99 data-nosnippet>99</a>
@@ -123,9 +123,9 @@
 <a href=#123 id=123 data-nosnippet>123</a>
 <a href=#124 id=124 data-nosnippet>124</a>    <span class="comment">// Write page back to disk
 <a href=#125 id=125 data-nosnippet>125</a>    </span>write_page(file, <span class="kw-2">&amp;mut </span>last_page, last_page_num)<span class="question-mark">?</span>;
-<a href=#126 id=126 data-nosnippet>126</a>    <span class="macro">println!</span>(<span class="string">"Tuple inserted successfully ({} bytes)."</span>, data.len());
+<a href=#126 id=126 data-nosnippet>126</a>    <span class="comment">// println!("Tuple inserted successfully ({} bytes).", data.len());
 <a href=#127 id=127 data-nosnippet>127</a>
-<a href=#128 id=128 data-nosnippet>128</a>    <span class="prelude-val">Ok</span>(())
+<a href=#128 id=128 data-nosnippet>128</a>    </span><span class="prelude-val">Ok</span>(())
 <a href=#129 id=129 data-nosnippet>129</a>}
 <a href=#130 id=130 data-nosnippet>130</a>
 <a href=#131 id=131 data-nosnippet>131</a>
@@ -153,15 +153,15 @@
 <a href=#153 id=153 data-nosnippet>153</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(io::ErrorKind::InvalidData, <span class="string">"Table has no columns"</span>));
 <a href=#154 id=154 data-nosnippet>154</a>    }
 <a href=#155 id=155 data-nosnippet>155</a>
-<a href=#156 id=156 data-nosnippet>156</a>    <span class="macro">println!</span>(
-<a href=#157 id=157 data-nosnippet>157</a>        <span class="string">"Loading CSV '{}' into table '{}.{}' ({} columns)"</span>,
-<a href=#158 id=158 data-nosnippet>158</a>        csv_path,
-<a href=#159 id=159 data-nosnippet>159</a>        db_name,
-<a href=#160 id=160 data-nosnippet>160</a>        table_name,
-<a href=#161 id=161 data-nosnippet>161</a>        columns.len()
-<a href=#162 id=162 data-nosnippet>162</a>    );
+<a href=#156 id=156 data-nosnippet>156</a>    <span class="comment">// println!(
+<a href=#157 id=157 data-nosnippet>157</a>    //     "Loading CSV '{}' into table '{}.{}' ({} columns)",
+<a href=#158 id=158 data-nosnippet>158</a>    //     csv_path,
+<a href=#159 id=159 data-nosnippet>159</a>    //     db_name,
+<a href=#160 id=160 data-nosnippet>160</a>    //     table_name,
+<a href=#161 id=161 data-nosnippet>161</a>    //     columns.len()
+<a href=#162 id=162 data-nosnippet>162</a>    // );
 <a href=#163 id=163 data-nosnippet>163</a>
-<a href=#164 id=164 data-nosnippet>164</a>    <span class="comment">// --- 2. Open and read the CSV file ---
+<a href=#164 id=164 data-nosnippet>164</a>    // --- 2. Open and read the CSV file ---
 <a href=#165 id=165 data-nosnippet>165</a>    </span><span class="kw">let </span>csv_file = File::open(csv_path)<span class="question-mark">?</span>;
 <a href=#166 id=166 data-nosnippet>166</a>    <span class="kw">let </span>reader = BufReader::new(csv_file);
 <a href=#167 id=167 data-nosnippet>167</a>
@@ -169,8 +169,8 @@
 <a href=#169 id=169 data-nosnippet>169</a>
 <a href=#170 id=170 data-nosnippet>170</a>    <span class="comment">// Skip header line
 <a href=#171 id=171 data-nosnippet>171</a>    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(header)) = lines.next() {
-<a href=#172 id=172 data-nosnippet>172</a>        <span class="macro">println!</span>(<span class="string">"Header: {}"</span>, header);
-<a href=#173 id=173 data-nosnippet>173</a>    }
+<a href=#172 id=172 data-nosnippet>172</a>        <span class="comment">// println!("Header: {}", header);
+<a href=#173 id=173 data-nosnippet>173</a>    </span>}
 <a href=#174 id=174 data-nosnippet>174</a>
 <a href=#175 id=175 data-nosnippet>175</a>    <span class="comment">// --- 3. Iterate through rows ---
 <a href=#176 id=176 data-nosnippet>176</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>inserted = <span class="number">0</span>;
