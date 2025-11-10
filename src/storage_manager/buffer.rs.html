@@ -139,7 +139,7 @@
 <a href=#139 id=139 data-nosnippet>139</a>
 <a href=#140 id=140 data-nosnippet>140</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>inserted_rows = <span class="number">0usize</span>;
 <a href=#141 id=141 data-nosnippet>141</a>        <span class="kw">let </span><span class="kw-2">mut </span>current_page_index = <span class="number">1</span>; <span class="comment">// start after header
-<a href=#142 id=142 data-nosnippet>142</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>used_pages = <span class="number">2</span>; <span class="comment">// header + first data page (we always have at least one data page)
+<a href=#142 id=142 data-nosnippet>142</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>used_pages = <span class="number">1</span>; <span class="comment">// header + at least 1 data page
 <a href=#143 id=143 data-nosnippet>143</a>
 <a href=#144 id=144 data-nosnippet>144</a>        // --- 3️⃣ Iterate CSV rows ---
 <a href=#145 id=145 data-nosnippet>145</a>        </span><span class="kw">for </span>(i, line) <span class="kw">in </span>lines.enumerate() {
@@ -190,8 +190,8 @@
 <a href=#190 id=190 data-nosnippet>190</a>                    </span><span class="kw">let </span><span class="kw-2">mut </span>new_page = Page::new();
 <a href=#191 id=191 data-nosnippet>191</a>                    init_page(<span class="kw-2">&amp;mut </span>new_page);
 <a href=#192 id=192 data-nosnippet>192</a>                    <span class="self">self</span>.pages.push(new_page);
-<a href=#193 id=193 data-nosnippet>193</a>                    used_pages = current_page_index + <span class="number">2</span>; <span class="comment">// +2 because we have header (0) and pages 1..=current_page_index
-<a href=#194 id=194 data-nosnippet>194</a>                </span>}
+<a href=#193 id=193 data-nosnippet>193</a>                    used_pages += <span class="number">1</span>;
+<a href=#194 id=194 data-nosnippet>194</a>                }
 <a href=#195 id=195 data-nosnippet>195</a>
 <a href=#196 id=196 data-nosnippet>196</a>                <span class="kw">let </span>page = <span class="kw-2">&amp;mut </span><span class="self">self</span>.pages[current_page_index];
 <a href=#197 id=197 data-nosnippet>197</a>                <span class="kw">let </span>free_space = page_free_space(page)<span class="question-mark">?</span>;
@@ -227,7 +227,7 @@
 <a href=#227 id=227 data-nosnippet>227</a>                <span class="kw">break</span>;
 <a href=#228 id=228 data-nosnippet>228</a>            }
 <a href=#229 id=229 data-nosnippet>229</a>        }
-<a href=#230 id=230 data-nosnippet>230</a>
+<a href=#230 id=230 data-nosnippet>230</a>        used_pages = used_pages - <span class="number">1</span>;
 <a href=#231 id=231 data-nosnippet>231</a>        <span class="comment">// --- 6️⃣ Update header ---
 <a href=#232 id=232 data-nosnippet>232</a>        </span><span class="self">self</span>.update_header_page_count(used_pages <span class="kw">as </span>u32);
 <a href=#233 id=233 data-nosnippet>233</a>
