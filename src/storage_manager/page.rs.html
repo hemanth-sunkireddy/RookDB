@@ -2,7 +2,7 @@
 <a href=#2 id=2 data-nosnippet>2</a><span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Seek, SeekFrom, BufRead, BufReader};
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span><span class="kw">crate</span>::catalog::Catalog;
 <a href=#4 id=4 data-nosnippet>4</a>
-<a href=#5 id=5 data-nosnippet>5</a><span class="kw">pub const </span>PAGE_SIZE: usize = <span class="number">4196</span>; <span class="comment">// Page size - storing as 8 bytes and as usize only because most pointers(file pointers and otheres requires it to be 8 bytes)
+<a href=#5 id=5 data-nosnippet>5</a><span class="kw">pub const </span>PAGE_SIZE: usize = <span class="number">8192</span>; <span class="comment">// Page size - storing as 8 bytes and as usize only because most pointers(file pointers and otheres requires it to be 8 bytes)
 <a href=#6 id=6 data-nosnippet>6</a></span><span class="kw">pub const </span>PAGE_HEADER_SIZE: u32 = <span class="number">8</span>;
 <a href=#7 id=7 data-nosnippet>7</a><span class="kw">pub const </span>ITEM_ID_SIZE: u32  = <span class="number">8</span>;
 <a href=#8 id=8 data-nosnippet>8</a>

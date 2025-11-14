@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BufferManager"]};
+window.SIDEBAR_ITEMS = {"constant":["EXTENT_SIZE"],"struct":["BufferManager"]};

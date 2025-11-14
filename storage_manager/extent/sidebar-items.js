@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EXTENT_SIZE"],"fn":["allocate_extent","find_page_for_insert","read_total_extents","read_total_pages","read_u32_at","write_total_extents","write_total_pages","write_u32_at"]};
