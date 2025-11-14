@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/buffer.rs`."><title>buffer.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="storage_manager" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.0 (f8297e351 2025-10-28)" data-channel="1.91.0" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">storage_manager/</div>buffer.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span><span class="kw">crate</span>::catalog::Catalog;
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/buffer.rs`."><title>buffer.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="storage_manager" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.1 (ed61e7d7e 2025-11-07)" data-channel="1.91.1" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">storage_manager/</div>buffer.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span><span class="kw">crate</span>::catalog::Catalog;
 <a href=#2 id=2 data-nosnippet>2</a><span class="kw">use </span><span class="kw">crate</span>::disk::{read_page, write_page};
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use </span><span class="kw">crate</span>::page::{PAGE_SIZE, Page, init_page, page_free_space};
 <a href=#4 id=4 data-nosnippet>4</a><span class="kw">use </span><span class="kw">crate</span>::table::TABLE_HEADER_SIZE;
@@ -245,8 +245,8 @@
 <a href=#245 id=245 data-nosnippet>245</a>    <span class="doccomment">/// Update header page count
 <a href=#246 id=246 data-nosnippet>246</a>    </span><span class="kw">fn </span>update_header_page_count(<span class="kw-2">&amp;mut </span><span class="self">self</span>, new_count: u32) {
 <a href=#247 id=247 data-nosnippet>247</a>       <span class="self">self</span>.pages[<span class="number">0</span>].data[<span class="number">0</span>..<span class="number">4</span>].copy_from_slice(<span class="kw-2">&amp;</span>new_count.to_le_bytes());
-<a href=#248 id=248 data-nosnippet>248</a>        <span class="macro">println!</span>(<span class="string">"Updated in-memory header page count to {}."</span>, new_count);
-<a href=#249 id=249 data-nosnippet>249</a>    }
+<a href=#248 id=248 data-nosnippet>248</a>        <span class="comment">// println!("Updated in-memory header page count to {}.", new_count);
+<a href=#249 id=249 data-nosnippet>249</a>    </span>}
 <a href=#250 id=250 data-nosnippet>250</a>
 <a href=#251 id=251 data-nosnippet>251</a>    <span class="doccomment">/// Flush header + pages to disk
 <a href=#252 id=252 data-nosnippet>252</a>    </span><span class="kw">fn </span>flush_to_disk(
@@ -263,11 +263,11 @@
 <a href=#263 id=263 data-nosnippet>263</a>            write_page(<span class="kw-2">&amp;mut </span>file, page, i <span class="kw">as </span>u32)<span class="question-mark">?</span>;
 <a href=#264 id=264 data-nosnippet>264</a>        }
 <a href=#265 id=265 data-nosnippet>265</a>
-<a href=#266 id=266 data-nosnippet>266</a>        <span class="macro">println!</span>(
-<a href=#267 id=267 data-nosnippet>267</a>            <span class="string">"Flushed {} used pages (including header) of '{}' to disk."</span>,
-<a href=#268 id=268 data-nosnippet>268</a>            used_pages, table_name
-<a href=#269 id=269 data-nosnippet>269</a>        );
-<a href=#270 id=270 data-nosnippet>270</a>        <span class="prelude-val">Ok</span>(())
+<a href=#266 id=266 data-nosnippet>266</a>        <span class="comment">// println!(
+<a href=#267 id=267 data-nosnippet>267</a>        //     "Flushed {} used pages (including header) of '{}' to disk.",
+<a href=#268 id=268 data-nosnippet>268</a>        //     used_pages, table_name
+<a href=#269 id=269 data-nosnippet>269</a>        // );
+<a href=#270 id=270 data-nosnippet>270</a>        </span><span class="prelude-val">Ok</span>(())
 <a href=#271 id=271 data-nosnippet>271</a>    }
 <a href=#272 id=272 data-nosnippet>272</a>
 <a href=#273 id=273 data-nosnippet>273</a>    <span class="doccomment">/// Full pipeline: load CSV -&gt; update header -&gt; flush to disk
@@ -278,12 +278,12 @@
 <a href=#278 id=278 data-nosnippet>278</a>        table_name: <span class="kw-2">&amp;</span>str,
 <a href=#279 id=279 data-nosnippet>279</a>        csv_path: <span class="kw-2">&amp;</span>str,
 <a href=#280 id=280 data-nosnippet>280</a>    ) -&gt; io::Result&lt;()&gt; {
-<a href=#281 id=281 data-nosnippet>281</a>        <span class="macro">println!</span>(
-<a href=#282 id=282 data-nosnippet>282</a>            <span class="string">"Starting buffered CSV load for '{}.{}'."</span>,
-<a href=#283 id=283 data-nosnippet>283</a>            db_name, table_name
-<a href=#284 id=284 data-nosnippet>284</a>        );
+<a href=#281 id=281 data-nosnippet>281</a>        <span class="comment">// println!(
+<a href=#282 id=282 data-nosnippet>282</a>        //     "Starting buffered CSV load for '{}.{}'.",
+<a href=#283 id=283 data-nosnippet>283</a>        //     db_name, table_name
+<a href=#284 id=284 data-nosnippet>284</a>        // );
 <a href=#285 id=285 data-nosnippet>285</a>
-<a href=#286 id=286 data-nosnippet>286</a>        <span class="comment">// Step 1️⃣: Load CSV → returns total pages used (including header)
+<a href=#286 id=286 data-nosnippet>286</a>        // Step 1️⃣: Load CSV → returns total pages used (including header)
 <a href=#287 id=287 data-nosnippet>287</a>        </span><span class="kw">let </span>used_pages = <span class="self">self</span>.load_csv_into_pages(catalog, db_name, table_name, csv_path)<span class="question-mark">?</span>;
 <a href=#288 id=288 data-nosnippet>288</a>
 <a href=#289 id=289 data-nosnippet>289</a>        <span class="comment">// // Step 2️⃣: Print first 10 in-memory pages (for debugging/inspection)
